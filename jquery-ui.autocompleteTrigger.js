@@ -2,9 +2,9 @@
  *  autocompleteTrigger (based on jQuery-UI Autocomplete)
  *  https://github.com/experteer/autocompleteTrigger
  *
- * Copyright 2011, Experteer GmbH, Munich
+ * Copyright 2012, Experteer GmbH, Munich
  *
- * @version: 1.0
+ * @version: 1.1
  * @author <a href="mailto:daniel.mattes@experteer.com">Daniel Mattes</a>
  *
  * @requires jQuery 1.6> and jQuery-Ui (including Autocomplete)  1.8>
@@ -88,9 +88,7 @@
 
           acTrigger.triggered = false;
 
-          // set cursor position after the autocompleted text
-          this.selectionStart = firstTextPart.length;
-          this.selectionEnd = firstTextPart.length;
+          acTrigger.setCursorPosition(firstTextPart.length);
 
           return false;
         },
@@ -164,7 +162,7 @@
         // IE
       } else if (elem.ownerDocument.selection) {
         var r = elem.ownerDocument.selection.createRange();
-        if (!r) return data;
+        if (!r) return 0;
         var tr = elem.createTextRange(), ctr = tr.duplicate();
 
         tr.moveToBookmark(r.getBookmark());
@@ -173,6 +171,31 @@
       }
 
       return position;
+    },
+
+    /**
+     * @description set the position of the cursor in a textfield, area,...
+     */
+    setCursorPosition:function (position) {
+      var elem = this.element[0];
+      if (elem.selectionStart) {
+        // firefox
+        elem.selectionStart = position;
+        elem.selectionEnd = position;
+      } else if (elem.ownerDocument.selection) {
+        // IE
+        elem.focus();
+        var r = elem.ownerDocument.selection.createRange();
+
+        // Move selection start and end to 0 position
+        r.moveStart('character', -elem.value.length);
+        r.moveEnd('character', -elem.value.length);
+
+        // Move selection start and end to desired position
+        r.moveStart('character', position);
+        r.moveEnd('character', 0);
+        r.select();
+      }
     }
   });
 })(jQuery, window, document);
