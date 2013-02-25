@@ -117,13 +117,19 @@
             var query;
             var lastTriggerPosition;
             var trigger = acTrigger.options.triggerStart;
+            var triggerEnd = acTrigger.options.triggerEnd;
 
             if (acTrigger.triggered) {
-              // call autocomplete with the string after the trigger
-              // Example: triggerStart = @, string is '@foo' -> query string is 'foo'
-              lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
-              query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
-              $(this).autocomplete("search", query);
+              lastString = text.substring(cursorPosition - trigger.length, cursorPosition);
+              if (lastString == triggerEnd) {
+                acTrigger.triggered = false;
+              } else { 
+                // call autocomplete with the string after the trigger
+                // Example: triggerStart = @, string is '@foo' -> query string is 'foo'
+                lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+                query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
+                $(this).autocomplete("search", query);
+              } 
             }
             else if (textLength >= trigger.length) {
               // set trigged to true, if the string before the cursor is triggerStart
