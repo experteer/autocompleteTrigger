@@ -103,35 +103,28 @@
       }, this.options))
 
         .bind("keyup", function(event) {
-          /**
-           * @description Bind to keyup-events to detect text changes.
-           * If the trigger is found before the cursor, autocomplete will be called
-           */
-          var acTrigger = $(this).data("autocompleteTrigger");
-
-          if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
-            var text = this.value;
-            var textLength = text.length;
-            var cursorPosition = acTrigger.getCursorPosition();
-            var lastString;
-            var query;
-            var lastTriggerPosition;
-            var trigger = acTrigger.options.triggerStart;
-
-            if (acTrigger.triggered) {
-              // call autocomplete with the string after the trigger
-              // Example: triggerStart = @, string is '@foo' -> query string is 'foo'
-              lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
-              query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
-              $(this).autocomplete("search", query);
-            }
-            else if (textLength >= trigger.length) {
-              // set trigged to true, if the string before the cursor is triggerStart
-              lastString = text.substring(cursorPosition - trigger.length, cursorPosition);
-              acTrigger.triggered = (lastString === trigger);
-            }
+        /**
+         * @description Bind to keyup-events to detect text changes.
+         * If the trigger is found before the cursor, autocomplete will be called
+         */
+        var widget = $(this);
+        var acTrigger = $(this).data("autocompleteTrigger");
+        var delay = typeof acTrigger.options.delay === 'undefined' ? 0 : acTrigger.options.delay;
+        if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
+          acTrigger.textValue = this.value;
+          if (typeof acTrigger.locked === 'undefined') {
+            acTrigger.locked = false;
           }
-        });
+
+          if (!acTrigger.locked) {
+            acTrigger.locked = true;
+            acTrigger.timeout = setTimeout(function() {
+              acTrigger.launchAutocomplete(acTrigger, widget);
+            }, delay);
+          }
+        }
+
+      });
     },
 
     /**
@@ -196,6 +189,35 @@
         r.moveEnd('character', 0);
         r.select();
       }
+    },
+
+    launchAutocomplete: function(acTrigger, widget) {
+      acTrigger.locked = false;
+      var text = acTrigger.textValue;
+      var textLength = text.length;
+      var cursorPosition = acTrigger.getCursorPosition();
+      var lastString;
+      var query;
+      var lastTriggerPosition;
+      var trigger = acTrigger.options.triggerStart;
+      var triggerEnd = acTrigger.options.triggerEnd;
+
+      lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+      lastTriggerEndPosition = text.substring(0, cursorPosition).lastIndexOf(triggerEnd);
+
+      //console.log('autocomplete '+text+" --- "+lastTriggerPosition+" --- "+lastTriggerEndPosition + " --- "+cursorPosition);
+      if (lastTriggerEndPosition < lastTriggerPosition && lastTriggerPosition != -1) {
+        query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
+        // console.log('query '+query);
+        acTrigger.triggered = true;
+        widget.autocomplete("search", query);
+      } else {
+        acTrigger.triggered = false;
+        widget.autocomplete("close");
+      }
+
     }
+
+
   });
 })(jQuery, window, document);
