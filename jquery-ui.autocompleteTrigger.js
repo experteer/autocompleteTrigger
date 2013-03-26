@@ -2,9 +2,9 @@
  *  autocompleteTrigger (based on jQuery-UI Autocomplete)
  *  https://github.com/experteer/autocompleteTrigger
  *
- * Copyright 2012, Experteer GmbH, Munich
+ * Copyright 2013, Experteer GmbH, Munich
  *
- * @version: 1.1
+ * @version: 1.2
  * @author <a href="mailto:daniel.mattes@experteer.com">Daniel Mattes</a>
  *
  * @requires jQuery 1.6> and jQuery-Ui (including Autocomplete)  1.8>
