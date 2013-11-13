@@ -36,4 +36,4 @@ $('input').autocompleteTrigger({
 });
 ```
 
-Demo: http://jsfiddle.net/dmattes/2YRgW/1/
+Demo: http://jsfiddle.net/dmattes/2YRgW

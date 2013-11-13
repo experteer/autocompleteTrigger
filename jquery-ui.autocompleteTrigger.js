@@ -4,7 +4,7 @@
  *
  * Copyright 2013, Experteer GmbH, Munich
  *
- * @version: 1.2
+ * @version: 1.3
  * @author <a href="mailto:daniel.mattes@experteer.com">Daniel Mattes</a>
  *
  * @requires jQuery 1.6> and jQuery-Ui (including Autocomplete)  1.8>
@@ -67,7 +67,7 @@
           /**
            * @description only make a request and suggest items if acTrigger.triggered is true
            */
-          var acTrigger = $(this).data("autocompleteTrigger");
+          var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
 
           return acTrigger.triggered;
         },
@@ -75,7 +75,7 @@
           /**
            * @description if a item is selected, insert the value between triggerStart and triggerEnd
            */
-          acTrigger = $(this).data("autocompleteTrigger");
+          var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
 
           var text = this.value;
           var trigger = acTrigger.options.triggerStart;
@@ -108,8 +108,9 @@
          * If the trigger is found before the cursor, autocomplete will be called
          */
         var widget = $(this);
-        var acTrigger = $(this).data("autocompleteTrigger");
+        var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
         var delay = typeof acTrigger.options.delay === 'undefined' ? 0 : acTrigger.options.delay;
+
         if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
           acTrigger.textValue = this.value;
           if (typeof acTrigger.locked === 'undefined') {
@@ -205,10 +206,10 @@
       lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
       lastTriggerEndPosition = text.substring(0, cursorPosition).lastIndexOf(triggerEnd);
 
-      //console.log('autocomplete '+text+" --- "+lastTriggerPosition+" --- "+lastTriggerEndPosition + " --- "+cursorPosition);
-      if (lastTriggerEndPosition < lastTriggerPosition && lastTriggerPosition != -1) {
+//      console.log('autocomplete: '+text+", lastTriggerPosition: "+lastTriggerPosition+", lastTriggerEndPosition: "+lastTriggerEndPosition + ", cursorPosition: "+cursorPosition);
+      if ((lastTriggerEndPosition < lastTriggerPosition && lastTriggerPosition != -1) || textLength >= trigger.length) {
         query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
-        // console.log('query '+query);
+//        console.log('query '+query);
         acTrigger.triggered = true;
         widget.autocomplete("search", query);
       } else {
