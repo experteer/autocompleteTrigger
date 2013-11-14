@@ -207,7 +207,7 @@
       lastTriggerEndPosition = text.substring(0, cursorPosition).lastIndexOf(triggerEnd);
 
 //      console.log('autocomplete: '+text+", lastTriggerPosition: "+lastTriggerPosition+", lastTriggerEndPosition: "+lastTriggerEndPosition + ", cursorPosition: "+cursorPosition);
-      if ((lastTriggerEndPosition < lastTriggerPosition && lastTriggerPosition != -1) || textLength >= trigger.length) {
+      if ((lastTriggerEndPosition < lastTriggerPosition || textLength >= trigger.length) && lastTriggerPosition != -1) {
         query = text.substring(lastTriggerPosition + trigger.length, cursorPosition);
 //        console.log('query '+query);
         acTrigger.triggered = true;
