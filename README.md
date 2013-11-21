@@ -8,6 +8,7 @@ Requirements
 
   - jQuery (http://www.jquery.com)
   - jQuery-UI (http://www.jqueryui.com)
+  - Caret detection: https://github.com/accursoft/caret
 
 Example
 ---

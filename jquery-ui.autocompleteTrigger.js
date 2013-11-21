@@ -4,10 +4,11 @@
  *
  * Copyright 2013, Experteer GmbH, Munich
  *
- * @version: 1.3
+ * @version: 1.4
  * @author <a href="mailto:daniel.mattes@experteer.com">Daniel Mattes</a>
  *
  * @requires jQuery 1.6> and jQuery-Ui (including Autocomplete)  1.8>
+ * @requires https://github.com/accursoft/caret
  *
  * @description
  * autocompleteTrigger allows you to specify a trigger (e. g. @ like twitter or facebook) and bind it to a textarea or input text field.
@@ -76,20 +77,54 @@
            * @description if a item is selected, insert the value between triggerStart and triggerEnd
            */
           var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
-
-          var text = this.value;
           var trigger = acTrigger.options.triggerStart;
           var cursorPosition = acTrigger.getCursorPosition();
-          var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
-          var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
-            ui.item.value +
-            acTrigger.options.triggerEnd;
-          this.value = firstTextPart + text.substring(cursorPosition, text.length);
+
+          if($(this).is('input,textarea')){
+            var text = $(this).val();
+            var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+            var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
+              ui.item.value +
+              acTrigger.options.triggerEnd;
+            $(this).val(firstTextPart + text.substring(cursorPosition, text.length));
+            acTrigger.setCursorPosition(firstTextPart.length);
+          } else{
+
+            var text = $(this).text();
+            var html = $(this).html();
+
+            var searchTerm = text.substring(0, cursorPosition);
+
+            var i = 0;
+            var index = 0;
+            while(i < searchTerm.length){
+              index = html.lastIndexOf(searchTerm.substring(i));
+              if(index != -1){
+                break;
+              }
+              i++;
+            }
+//            console.log({html: html, index: index, searchTerm: searchTerm.substring(i) })
+
+            var htmlCursorPosition = index + searchTerm.substring(i).length;
+            var htmlLastTriggerPosition = html.substring(0, htmlCursorPosition).lastIndexOf(trigger);
+            var htmlFirstTextPart = html.substring(0, htmlLastTriggerPosition + trigger.length) +
+                          ui.item.value +
+                          acTrigger.options.triggerEnd;
+//            console.log({htmlCursorPosition: htmlCursorPosition, htmlLastTriggerPosition: htmlLastTriggerPosition, htmlFirstTextPart: htmlFirstTextPart })
+
+            // necessary to set cursor position
+            var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+            var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
+                ui.item.value +
+                acTrigger.options.triggerEnd;
+//            console.log({lastTriggerPosition: lastTriggerPosition, firstTextPart: firstTextPart, length: firstTextPart.length})
+
+            $(this).html(htmlFirstTextPart + html.substring(htmlCursorPosition, html.length));
+            acTrigger.setCursorPosition(firstTextPart.length);
+          }
 
           acTrigger.triggered = false;
-
-          acTrigger.setCursorPosition(firstTextPart.length);
-
           return false;
         },
         focus:function() {
@@ -112,7 +147,14 @@
         var delay = typeof acTrigger.options.delay === 'undefined' ? 0 : acTrigger.options.delay;
 
         if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
-          acTrigger.textValue = this.value;
+
+          if($(this).is('input,textarea')){
+            var text = $(this).val();
+          } else{
+            var text = $(this).text();
+          }
+
+          acTrigger.textValue = text;
           if (typeof acTrigger.locked === 'undefined') {
             acTrigger.locked = false;
           }
@@ -146,25 +188,9 @@
      * @description calculates the the current cursor position in the bound textfield, area,...
      * @returns {int}  the position of the cursor.
      */
-    getCursorPosition:function() {
-      var elem = this.element[0];
-      var position = 0;
-
-      // dom 3
-      if (elem.selectionStart >= 0) {
-        position = elem.selectionStart;
-        // IE
-      } else if (elem.ownerDocument.selection) {
-        var r = elem.ownerDocument.selection.createRange();
-        if (!r) return 0;
-        var tr = elem.createTextRange(), ctr = tr.duplicate();
-
-        tr.moveToBookmark(r.getBookmark());
-        ctr.setEndPoint('EndToStart', tr);
-        position = ctr.text.length;
-      }
-
-      return position;
+    getCursorPosition: function () {
+        var elem = this.element[0];
+        return jQuery(elem).caret();
     },
 
     /**
@@ -172,24 +198,7 @@
      */
     setCursorPosition:function (position) {
       var elem = this.element[0];
-      if (elem.selectionStart) {
-        // firefox
-        elem.selectionStart = position;
-        elem.selectionEnd = position;
-      } else if (elem.ownerDocument.selection) {
-        // IE
-        elem.focus();
-        var r = elem.ownerDocument.selection.createRange();
-
-        // Move selection start and end to 0 position
-        r.moveStart('character', -elem.value.length);
-        r.moveEnd('character', -elem.value.length);
-
-        // Move selection start and end to desired position
-        r.moveStart('character', position);
-        r.moveEnd('character', 0);
-        r.select();
-      }
+      return jQuery(elem).caret(position);
     },
 
     launchAutocomplete: function(acTrigger, widget) {
