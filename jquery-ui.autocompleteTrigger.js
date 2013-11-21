@@ -49,131 +49,131 @@
  */
 
 ;
-(function($, window, document, undefined) {
+(function ($, window, document, undefined) {
   $.widget("ui.autocompleteTrigger", {
 
     //Options to be used as defaults
-    options:{
-      triggerStart:"%{",
-      triggerEnd:"}"
+    options: {
+      triggerStart: "%{",
+      triggerEnd: "}"
     },
 
 
-    _create:function() {
+    _create: function () {
       this.triggered = false;
 
       this.element.autocomplete($.extend({
 
-        search:function() {
-          /**
-           * @description only make a request and suggest items if acTrigger.triggered is true
-           */
-          var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
+          search: function () {
+            /**
+             * @description only make a request and suggest items if acTrigger.triggered is true
+             */
+            var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
 
-          return acTrigger.triggered;
-        },
-        select:function(event, ui) {
-          /**
-           * @description if a item is selected, insert the value between triggerStart and triggerEnd
-           */
-          var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
-          var trigger = acTrigger.options.triggerStart;
-          var cursorPosition = acTrigger.getCursorPosition();
+            return acTrigger.triggered;
+          },
+          select: function (event, ui) {
+            /**
+             * @description if a item is selected, insert the value between triggerStart and triggerEnd
+             */
+            var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
+            var trigger = acTrigger.options.triggerStart;
+            var cursorPosition = acTrigger.getCursorPosition();
 
-          if($(this).is('input,textarea')){
-            var text = $(this).val();
-            var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
-            var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
-              ui.item.value +
-              acTrigger.options.triggerEnd;
-            $(this).val(firstTextPart + text.substring(cursorPosition, text.length));
-            acTrigger.setCursorPosition(firstTextPart.length);
-          } else{
+            if ($(this).is('input,textarea')) {
+              var text = $(this).val();
+              var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+              var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
+                ui.item.value +
+                acTrigger.options.triggerEnd;
+              $(this).val(firstTextPart + text.substring(cursorPosition, text.length));
+              acTrigger.setCursorPosition(firstTextPart.length);
+            } else {
 
-            var text = $(this).text();
-            var html = $(this).html();
+              var text = $(this).text();
+              var html = $(this).html();
 
-            var searchTerm = text.substring(0, cursorPosition);
+              var searchTerm = text.substring(0, cursorPosition);
 
-            var i = 0;
-            var index = 0;
-            while(i < searchTerm.length){
-              index = html.lastIndexOf(searchTerm.substring(i));
-              if(index != -1){
-                break;
+              var i = 0;
+              var index = 0;
+              while (i < searchTerm.length) {
+                index = html.lastIndexOf(searchTerm.substring(i));
+                if (index != -1) {
+                  break;
+                }
+                i++;
               }
-              i++;
-            }
 //            console.log({html: html, index: index, searchTerm: searchTerm.substring(i) })
 
-            var htmlCursorPosition = index + searchTerm.substring(i).length;
-            var htmlLastTriggerPosition = html.substring(0, htmlCursorPosition).lastIndexOf(trigger);
-            var htmlFirstTextPart = html.substring(0, htmlLastTriggerPosition + trigger.length) +
-                          ui.item.value +
-                          acTrigger.options.triggerEnd;
+              var htmlCursorPosition = index + searchTerm.substring(i).length;
+              var htmlLastTriggerPosition = html.substring(0, htmlCursorPosition).lastIndexOf(trigger);
+              var htmlFirstTextPart = html.substring(0, htmlLastTriggerPosition + trigger.length) +
+                ui.item.value +
+                acTrigger.options.triggerEnd;
 //            console.log({htmlCursorPosition: htmlCursorPosition, htmlLastTriggerPosition: htmlLastTriggerPosition, htmlFirstTextPart: htmlFirstTextPart })
 
-            // necessary to set cursor position
-            var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
-            var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
+              // necessary to set cursor position
+              var lastTriggerPosition = text.substring(0, cursorPosition).lastIndexOf(trigger);
+              var firstTextPart = text.substring(0, lastTriggerPosition + trigger.length) +
                 ui.item.value +
                 acTrigger.options.triggerEnd;
 //            console.log({lastTriggerPosition: lastTriggerPosition, firstTextPart: firstTextPart, length: firstTextPart.length})
 
-            $(this).html(htmlFirstTextPart + html.substring(htmlCursorPosition, html.length));
-            acTrigger.setCursorPosition(firstTextPart.length);
-          }
+              $(this).html(htmlFirstTextPart + html.substring(htmlCursorPosition, html.length));
+              acTrigger.setCursorPosition(firstTextPart.length);
+            }
 
-          acTrigger.triggered = false;
-          return false;
-        },
-        focus:function() {
+            acTrigger.triggered = false;
+            return false;
+          },
+          focus: function () {
+            /**
+             * @description prevent to replace the hole text, if a item is hovered
+             */
+
+            return false;
+          },
+          minLength: 0
+        }, this.options))
+
+        .bind("keyup", function (event) {
           /**
-           * @description prevent to replace the hole text, if a item is hovered
+           * @description Bind to keyup-events to detect text changes.
+           * If the trigger is found before the cursor, autocomplete will be called
            */
+          var widget = $(this);
+          var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
+          var delay = typeof acTrigger.options.delay === 'undefined' ? 0 : acTrigger.options.delay;
 
-          return false;
-        },
-        minLength:0
-      }, this.options))
+          if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
 
-        .bind("keyup", function(event) {
-        /**
-         * @description Bind to keyup-events to detect text changes.
-         * If the trigger is found before the cursor, autocomplete will be called
-         */
-        var widget = $(this);
-        var acTrigger = $(this).data("autocompleteTrigger") || $(this).data("uiAutocompleteTrigger");
-        var delay = typeof acTrigger.options.delay === 'undefined' ? 0 : acTrigger.options.delay;
+            if ($(this).is('input,textarea')) {
+              var text = $(this).val();
+            } else {
+              var text = $(this).text();
+            }
 
-        if (event.keyCode != $.ui.keyCode.UP && event.keyCode != $.ui.keyCode.DOWN) {
+            acTrigger.textValue = text;
+            if (typeof acTrigger.locked === 'undefined') {
+              acTrigger.locked = false;
+            }
 
-          if($(this).is('input,textarea')){
-            var text = $(this).val();
-          } else{
-            var text = $(this).text();
+            if (!acTrigger.locked) {
+              acTrigger.locked = true;
+              acTrigger.timeout = setTimeout(function () {
+                acTrigger.launchAutocomplete(acTrigger, widget);
+              }, delay);
+            }
           }
 
-          acTrigger.textValue = text;
-          if (typeof acTrigger.locked === 'undefined') {
-            acTrigger.locked = false;
-          }
-
-          if (!acTrigger.locked) {
-            acTrigger.locked = true;
-            acTrigger.timeout = setTimeout(function() {
-              acTrigger.launchAutocomplete(acTrigger, widget);
-            }, delay);
-          }
-        }
-
-      });
+        });
     },
 
     /**
      * @description Destroy an instantiated plugin and clean up modifications the widget has made to the DOM
      */
-    destroy:function() {
+    destroy: function () {
 
       // this.element.removeStuff();
       // For UI 1.8, destroy must be invoked from the
@@ -189,19 +189,19 @@
      * @returns {int}  the position of the cursor.
      */
     getCursorPosition: function () {
-        var elem = this.element[0];
-        return jQuery(elem).caret();
+      var elem = this.element[0];
+      return jQuery(elem).caret();
     },
 
     /**
      * @description set the position of the cursor in a textfield, area,...
      */
-    setCursorPosition:function (position) {
+    setCursorPosition: function (position) {
       var elem = this.element[0];
       return jQuery(elem).caret(position);
     },
 
-    launchAutocomplete: function(acTrigger, widget) {
+    launchAutocomplete: function (acTrigger, widget) {
       acTrigger.locked = false;
       var text = acTrigger.textValue;
       var textLength = text.length;
